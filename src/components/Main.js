@@ -1,34 +1,26 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { api } from "../utils/Api";
 import Card from './Card';
 
 function Main(props) {
-  const [userName, setUserName] = React.useState("");
-  const [userDescription, setUserDescription] = React.useState("");
-  const [userAvatar, setUserAvatar] = React.useState("");
-  const [cards, setCards] = React.useState([]);
+  const [userName, setUserName] = useState("");
+  const [userDescription, setUserDescription] = useState("");
+  const [userAvatar, setUserAvatar] = useState("");
+  const [cards, setCards] = useState([]);
 
-  React.useEffect(() => {
-    api.getUserInfo()
-      .then((res) => {
-        setUserName(res.name);
-        setUserDescription(res.about);
-        setUserAvatar(res.avatar);
-      })
-      .catch((err) => {
-        console.log(err)
-      });
+  useEffect(() => {
+    Promise.all([api.getUserInfo(), api.getInitialCards()])
+    .then(([resUserInfo, resInitialCards]) => {
+        setUserName(resUserInfo.name);
+        setUserDescription(resUserInfo.about);
+        setUserAvatar(resUserInfo.avatar);
+        setCards(resInitialCards);
+    })
+    .catch((err) => {
+      console.log(err)
+    });
   }, []);
 
-  React.useEffect(() => {
-    api.getInitialCards()
-      .then((res) => {
-        setCards(res);
-      })
-      .catch((err) => {
-        console.log(err)
-      });
-  }, []);
   
   return (
     <main className="content">
