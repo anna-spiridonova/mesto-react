@@ -4,6 +4,7 @@ import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
 import PopupWithForm from './PopupWithForm';
+import EditProfilePopup from './EditProfilePopup';
 import ImagePopup from './ImagePopup';
 import { api } from "../utils/Api";
 import { CurrentUserContext } from '../contexts/CurrentUserContext';
@@ -15,7 +16,11 @@ function App() {
   const [selectedCard, setSelectedCard] = useState({});
   const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState({});
+  const [currentUser, setCurrentUser] = useState({
+    name: "",
+    about: "",
+    avatar: ""
+  });
   const [cards, setCards] = useState([]);
 
   useEffect(() => {
@@ -49,19 +54,38 @@ function App() {
     setSelectedCard(card);
     setIsImagePopupOpen(true)
   }
+
   function handleCardLike(card) {
     const isLiked = card.likes.some(i => i._id === currentUser._id);    
     api.changeLikeCardStatus(card._id, !isLiked)
       .then((newCard) => {
         setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
+      })
+      .catch((err) => {
+        console.log(err)
       });
   }
+
   function handleCardDelete(card) {
     api.deleteCard(card._id)
       .then((res) => {
         const newCards = cards.filter((c) => (c._id !== card._id && res));
         setCards(newCards);
       })
+      .catch((err) => {
+        console.log(err)
+      });
+  }
+
+  function handleUpdateUser({name, about}) {
+    api.editProfileInfo(name, about)
+      .then((res) => {
+        setCurrentUser(res);
+        closeAllPopups()
+      })
+      .catch((err) => {
+        console.log(err)
+      });
   }
 
   return (
@@ -80,41 +104,10 @@ function App() {
         <Footer />
 
         {/* форма редактора профиля */}
-        <PopupWithForm
-          name={"profile"}
-          title={"Редактировать профиль"}
-          isOpen={isEditProfilePopupOpen}
-          onClose={closeAllPopups}
-        >
-          <fieldset className="popup__input-container">
-            <label className="popup__label">
-              <input
-                type="text"
-                id="name"
-                className="popup__input popup__input_type_info popup__input_type_name"
-                name="name"
-                placeholder="Имя"
-                required
-                minLength="2"
-                maxLength="40"
-              />
-              <span className="name-error popup__error"></span>
-            </label>
-            <label className="popup__label">
-              <input
-                type="text"
-                id="job"
-                className="popup__input popup__input_type_info popup__input_type_job"
-                name="job"
-                placeholder="О себе"
-                required
-                minLength="2"
-                maxLength="200"
-              />
-              <span className="job-error popup__error"></span>
-            </label>
-          </fieldset>
-        </PopupWithForm>
+       <EditProfilePopup
+       isOpen={isEditProfilePopupOpen}
+       onClose={closeAllPopups}
+       onUpdateUser={handleUpdateUser} />
 
         {/* форма создания карточки */}
         <PopupWithForm
