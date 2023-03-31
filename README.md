@@ -13,3 +13,7 @@
 - Сборка проекта Вебпаком
 - Работа с API
 - Create React App
+
+**GitHub Pages**
+
+- [Ссылка на проект в GitHub Pages](https://anna-spiridonova.github.io/mesto-react/)
