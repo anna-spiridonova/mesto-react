@@ -5,6 +5,8 @@ import Main from './Main';
 import Footer from './Footer';
 import PopupWithForm from './PopupWithForm';
 import EditProfilePopup from './EditProfilePopup';
+import EditAvatarPopup from './EditAvatarPopup';
+import AddPlacePopup from './AddPlacePopup';
 import ImagePopup from './ImagePopup';
 import { api } from "../utils/Api";
 import { CurrentUserContext } from '../contexts/CurrentUserContext';
@@ -48,7 +50,7 @@ function App() {
     setIsEditProfilePopupOpen(false);
     setIsAddPlacePopupOpen(false);
     setSelectedCard({});
-    setIsImagePopupOpen(false)
+    setIsImagePopupOpen(false);
   }
   function handleCardClick(card) {
     setSelectedCard(card);
@@ -88,6 +90,28 @@ function App() {
       });
   }
 
+  function handleUpdateAvatar({avatar}) {
+    api.editAvatar(avatar)
+      .then((res) => {
+        setCurrentUser(res);
+        closeAllPopups();
+      })
+      .catch((err) => {
+        console.log(err)
+      });
+  }
+
+  function handleAddPlaceSubmit({name, link}) {
+    api.addNewCard(name, link)
+      .then((newCard) => {
+        setCards([newCard, ...cards]);
+        closeAllPopups();
+      })
+      .catch((err) => {
+        console.log(err)
+      });
+  }
+
   return (
     <CurrentUserContext.Provider value = {currentUser}>
       <div className="root">
@@ -104,77 +128,38 @@ function App() {
         <Footer />
 
         {/* форма редактора профиля */}
-       <EditProfilePopup
-       isOpen={isEditProfilePopupOpen}
-       onClose={closeAllPopups}
-       onUpdateUser={handleUpdateUser} />
+        <EditProfilePopup
+        isOpen={isEditProfilePopupOpen}
+        onClose={closeAllPopups}
+        onUpdateUser={handleUpdateUser} 
+        />
+
+        {/* форма редактора аватара */}
+        <EditAvatarPopup
+        isOpen={isEditAvatarPopupOpen}
+        onClose={closeAllPopups}
+        onUpdateAvatar={handleUpdateAvatar}
+        />
 
         {/* форма создания карточки */}
-        <PopupWithForm
-          name={"place"}
-          title={"Новое место"}
-          buttonValue={"Создать"}
-          isOpen={isAddPlacePopupOpen}
-          onClose={closeAllPopups}
-        >
-          <fieldset className="popup__input-container">
-            <label className="popup__label">
-              <input
-                type="text"
-                id="title"
-                className="popup__input popup__input_type_info popup__input_type_title"
-                name="name"
-                placeholder="Название"
-                required
-                minLength="2"
-                maxLength="30"
-              />
-              <span className="title-error popup__error"></span>
-            </label>
-            <label className="popup__label">
-              <input
-                type="url"
-                id="link"
-                className="popup__input popup__input_type_info popup__input_type_link"
-                name="link"
-                placeholder="Ссылка на картинку"
-                required
-              />
-              <span className="link-error popup__error"></span>
-            </label>
-          </fieldset>
-        </PopupWithForm>
+        <AddPlacePopup
+        isOpen={isAddPlacePopupOpen}
+        onClose={closeAllPopups}
+        onAddPlace={handleAddPlaceSubmit}
+        />
 
         {/* форма подтверждения удаления */}
         <PopupWithForm
           name={"confirm"}
           title={"Вы уверены?"}
           buttonValue={"Да"}
-        ></PopupWithForm>
+        />
 
-        {/* форма редактора аватара */}
-        <PopupWithForm
-          name={"avatar"}
-          title={"Обновить аватар"}
-          isOpen={isEditAvatarPopupOpen}
-          onClose={closeAllPopups}
-        >
-          <fieldset className="popup__input-container">
-            <label className="popup__label">
-              <input
-                type="url"
-                id="avatar"
-                className="popup__input popup__input_type_info popup__input_type_link"
-                name="avatar"
-                placeholder="Ссылка на картинку"
-                required
-              />
-              <span className="avatar-error popup__error"></span>
-            </label>
-          </fieldset>
-        </PopupWithForm>
-
-        <ImagePopup card={selectedCard} onClose={closeAllPopups} isOpen={isImagePopupOpen} />
+        <ImagePopup 
+        card={selectedCard}
+        onClose={closeAllPopups}
+        isOpen={isImagePopupOpen}
+        />
 
       </div>
     </CurrentUserContext.Provider>
